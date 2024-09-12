@@ -56,6 +56,6 @@ func IsRecentTime(timeStr string, year, month, days int) bool {
 		return false
 	}
 
-	cutoffTime := time.Now().AddDate(-year, -month, -days) // 6 months ago
+	cutoffTime := time.Now().AddDate(year, month, days) // 6 months ago
 	return replyTime.After(cutoffTime)
 }

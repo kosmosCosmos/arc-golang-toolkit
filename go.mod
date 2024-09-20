@@ -3,7 +3,6 @@ module github.com/kosmosCosmos/arc-golang-toolkit
 go 1.23.1
 
 require (
-	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/imroc/req/v3 v3.46.0
 	github.com/meilisearch/meilisearch-go v0.28.0

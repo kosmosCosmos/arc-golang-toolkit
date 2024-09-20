@@ -3,59 +3,58 @@ package tools
 import (
 	"fmt"
 	"github.com/araddon/dateparse"
+	"log"
+	"strings"
 	"time"
 )
 
-func ParseTime(RunMode, Start, End string) (time.Time, time.Time, error) {
-	now := time.Now()
-	var StartTime, EndTime time.Time
-	switch RunMode {
-	case "daily":
-		StartTime = now.AddDate(0, 0, -1)
-		EndTime = now
-		return StartTime, EndTime, nil
-	case "weekly":
-		StartTime = now.AddDate(0, 0, -7)
-		EndTime = now
-		return StartTime, EndTime, nil
-	case "monthly":
-		StartTime = now.AddDate(0, 0, -30)
-		EndTime = now
-		return StartTime, EndTime, nil
-	case "custom":
-		// 自定义时间区间，需要解析 Start 和 End 参数
-		if Start == "" || End == "" {
-			return StartTime, EndTime, fmt.Errorf("for custom mode, please specify both start and end time")
-		}
+func parseDateTime(dateStr string) (time.Time, error) {
+	originalDateStr := dateStr
+	dateStr = strings.TrimSpace(dateStr)
 
-		var err error
-		StartTime, err = dateparse.ParseLocal(Start)
-		if err != nil {
-			return StartTime, EndTime, fmt.Errorf("invalid start time: %w", err)
-		}
-
-		EndTime, err = dateparse.ParseLocal(End)
-		if err != nil {
-			return StartTime, EndTime, fmt.Errorf("invalid end time: %w", err)
-		}
-
-		if StartTime.After(EndTime) {
-			return StartTime, EndTime, fmt.Errorf("start time (%v) is after end time (%v)", StartTime, EndTime)
-		}
-
-	default:
-		return StartTime, EndTime, fmt.Errorf("invalid RunMode: %s", RunMode)
+	// 处理特殊情况
+	if strings.Contains(dateStr, "今天") {
+		// 今天
+		today := time.Now().Format("2006-01-02")
+		dateStr = strings.Replace(dateStr, "今天", today, 1)
+	} else if strings.Contains(dateStr, "昨天") {
+		// 昨天
+		yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+		dateStr = strings.Replace(dateStr, "昨天", yesterday, 1)
+	} else if strings.Contains(dateStr, "前天") {
+		// 前天
+		dayBeforeYesterday := time.Now().AddDate(0, 0, -2).Format("2006-01-02")
+		dateStr = strings.Replace(dateStr, "前天", dayBeforeYesterday, 1)
+	} else if strings.Contains(dateStr, "月") && strings.Contains(dateStr, "日") {
+		// 将 "9月5日 14:20" 转换为 "2023-09-05 14:20"
+		dateStr = strings.Replace(dateStr, "月", "-", 1)
+		dateStr = strings.Replace(dateStr, "日", "", 1)
+		currentYear := time.Now().Year()
+		dateStr = fmt.Sprintf("%d-%s", currentYear, dateStr)
+	} else if len(dateStr) <= 5 && strings.Contains(dateStr, ":") {
+		// 只有时间，假设为今天
+		today := time.Now().Format("2006-01-02")
+		dateStr = fmt.Sprintf("%s %s", today, dateStr)
 	}
 
-	return StartTime, EndTime, nil
+	// 使用 dateparse 解析日期字符串
+	parsedTime, err := dateparse.ParseIn(dateStr, time.Local)
+	if err != nil {
+		log.Printf("Failed to parse date '%s' (original: '%s'): %v", dateStr, originalDateStr, err)
+		return time.Time{}, fmt.Errorf("无法解析日期时间: %v", err)
+	}
+	log.Printf("Successfully parsed date '%s' (original: '%s') as %v", dateStr, originalDateStr, parsedTime)
+	return parsedTime, nil
 }
 
-func IsRecentTime(timeStr string, year, month, days int) bool {
-	replyTime, err := time.Parse("2006-01-02 15:04:05", timeStr)
+func IsRecentTime(dateStr string) bool {
+	parsedTime, err := parseDateTime(dateStr)
 	if err != nil {
-		return false
+		log.Printf("Failed to parse date '%s': %v", dateStr, err)
+		return false // 无法解析日期，跳过该条目
 	}
-
-	cutoffTime := time.Now().AddDate(year, month, days) // 6 months ago
-	return replyTime.After(cutoffTime)
+	threshold := time.Now().Add(-1 * time.Hour) // 设定时间阈值
+	isRecent := parsedTime.After(threshold)
+	log.Printf("Time: %s, Is recent: %t", parsedTime.Format("2006-01-02 15:04"), isRecent)
+	return isRecent
 }

@@ -6,7 +6,7 @@ import (
 	"xorm.io/xorm"
 )
 
-type MySQLClientConfig struct {
+type MysqlConfiguration struct {
 	Host     string
 	Port     string
 	DBName   string
@@ -14,7 +14,7 @@ type MySQLClientConfig struct {
 	Password string
 }
 
-func NewMySQLEngine(config MySQLClientConfig) (*xorm.Engine, error) {
+func NewMySQLEngine(config MysqlConfiguration) (*xorm.Engine, error) {
 	if config.Port == "" {
 		config.Port = "3306"
 	}

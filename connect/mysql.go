@@ -14,7 +14,7 @@ type MysqlConfiguration struct {
 	Password string
 }
 
-func NewMySQLEngine(config MysqlConfiguration) (*xorm.Engine, error) {
+func NewMySQLEngine(config *MysqlConfiguration) (*xorm.Engine, error) {
 	if config.Port == "" {
 		config.Port = "3306"
 	}

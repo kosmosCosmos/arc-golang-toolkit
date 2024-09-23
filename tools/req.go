@@ -6,12 +6,12 @@ import (
 	"strings"
 )
 
-func NewRequest(method, url string, header, payload map[string]string) (*req.Response, string, error) {
+func NewRequest(method, url string, header map[string]string, payload map[string]interface{}) (*req.Response, string, error) {
 	client := req.C().SetCommonHeaders(header)
 
 	r := client.R()
 	if payload != nil {
-		r.SetFormData(payload)
+		r.SetFormDataAnyType(payload)
 	}
 
 	var resp *req.Response

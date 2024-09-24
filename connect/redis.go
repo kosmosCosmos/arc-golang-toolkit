@@ -6,7 +6,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type RedisClientConfig struct {
+type RedisConfiguration struct {
 	Host     string
 	Port     string
 	Username string
@@ -15,7 +15,7 @@ type RedisClientConfig struct {
 }
 
 // NewRedisClient creates and returns a new Redis client
-func NewRedisClient(config RedisClientConfig) (*redis.Client, error) {
+func NewRedisClient(config RedisConfiguration) (*redis.Client, error) {
 	if config.Port == "" {
 		config.Port = "6379"
 	}

@@ -15,7 +15,7 @@ type RedisConfiguration struct {
 }
 
 // NewRedisClient creates and returns a new Redis client
-func NewRedisClient(config RedisConfiguration) (*redis.Client, error) {
+func NewRedisClient(config *RedisConfiguration) (*redis.Client, error) {
 	if config.Port == "" {
 		config.Port = "6379"
 	}
